@@ -23,7 +23,13 @@ CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "60"))
 
 
 # _embedder = SentenceTransformer(EMBEDDING_MODEL_NAME)
-_client = chromadb.Client()
+import chromadb
+
+_client = chromadb.CloudClient(
+    api_key=os.getenv("CHROMA_API_KEY"),
+    tenant=os.getenv("CHROMA_TENANT_ID"),
+    database=os.getenv("CHROMA_DATABASE"),
+)
 _collection = _client.get_or_create_collection(name="pdf_qa")
 
 
@@ -120,25 +126,16 @@ def index_pdf(pdf_path: str, doc_id: str | None = None) -> Dict:
     # )
     print(f"Documents: {len(documents)}")
 
-    _collection.add(
-        ids=ids, documents=documents, metadatas=metadatas
-    )
+    _collection.add(ids=ids, documents=documents, metadatas=metadatas)
     return {"doc_id": doc_id, "chunks": len(documents), "pages": len(pages)}
 
 
 def search(query: str, doc_id: str | None = None, k: int | None = None):
-    collection = _client.get_collection(name="pdf_qa")
-    print(f"Collection: {collection.get()}")
-    return "test"
-    # results = _collection.query(
-    #     query_texts=[query],
-    #     n_results=k,
-    #     where={"doc_id": doc_id},
-    #     include=["metadatas", "documents", "distances"],
-    # )
-    # print(f"Results: {results}")
-    # return results
-
-
-
-
+    results = _collection.query(
+        query_texts=[query],
+        n_results=k,
+        where={"doc_id": doc_id},
+        include=["metadatas", "documents", "distances"],
+    )
+    print(f"Results: {results}")
+    return results

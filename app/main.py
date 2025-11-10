@@ -34,7 +34,7 @@ async def index_endpoint(file: UploadFile = File(...)):
 @app.post("/ask")
 async def ask_endpoint(payload: AskRequest):
     results = search(payload.question, payload.doc_id, payload.top_k)
-    # answer = generate_answer(ctx, payload.question)
+    # answer = generate_answer(results["documents"], payload.question)
     return results
 
 
