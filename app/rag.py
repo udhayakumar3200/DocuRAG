@@ -3,13 +3,13 @@ import uuid
 from typing import Dict, List, Tuple
 from pathlib import Path
 
-
+from dotenv import load_dotenv
 import chromadb
 from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 import numpy as np
 
-
+load_dotenv()
 from .utils import extract_pdf_text, chunk_text
 
 

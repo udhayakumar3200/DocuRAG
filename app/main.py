@@ -6,7 +6,9 @@ from fastapi.responses import JSONResponse
 from .rag import index_pdf, search
 from .llm import generate_answer
 from .models import IndexResponse, AskRequest, AskResponse
+from dotenv import load_dotenv
 
+load_dotenv()
 
 UPLOAD_DIR = Path("data/uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -34,8 +36,8 @@ async def index_endpoint(file: UploadFile = File(...)):
 @app.post("/ask")
 async def ask_endpoint(payload: AskRequest):
     results = search(payload.question, payload.doc_id, payload.top_k)
-    # answer = generate_answer(results["documents"], payload.question)
-    return results
+    answer = generate_answer(results["documents"], payload.question)
+    return {"answer": answer}
 
 
 @app.get("/")

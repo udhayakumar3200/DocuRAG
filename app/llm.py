@@ -2,14 +2,14 @@ import os
 from typing import List
 from huggingface_hub import InferenceClient
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 
-HF_API_TOKEN = os.getenv("HF_API_TOKEN")
-HF_MODEL_ID = "MiniMaxAI/MiniMax-M2"
 
-
-client = InferenceClient(model=HF_MODEL_ID, token=HF_API_TOKEN)
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1", api_key=os.getenv("OPENROUTER_API_KEY")
+)
 
 
 SYSTEM_PROMPT = (
@@ -37,12 +37,16 @@ def generate_answer(
 ) -> str:
     prompt = format_prompt(context_blocks, question)
     # Use text generation (works for instruct/chat models)
-    resp = client.text_generation(
-        prompt,
-        max_new_tokens=max_new_tokens,
+    # First API call with reasoning
+    response = client.chat.completions.create(
+        model="openai/gpt-oss-20b:free",
+        messages=[
+            {"role": "user", "content": prompt},
+            {"role": "system", "content": SYSTEM_PROMPT},
+        ],
+        # extra_body={"reasoning": {"enabled": True}},
         temperature=temperature,
-        do_sample=temperature > 0,
-        return_full_text=False,
     )
-    print(f"Response: {resp}")
-    return resp
+    response = response.choices[0].message.content
+    print(f"Response: {response}")
+    return response
